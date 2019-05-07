@@ -1,0 +1,106 @@
+From 9c4a30c22725948537911dafa664d3741fd0249b Mon Sep 17 00:00:00 2001
+From: Javier Martinez Canillas <javierm@redhat.com>
+Date: Wed, 4 Jul 2018 16:04:15 +0200
+Subject: [PATCH 1/1] tcti-dynamic: Make the tss2 device TCTI library SONAME
+ the default
+
+The raw libtss2-tcti-device.so is only included in the development package
+but the tpm2-abrmd tries to dynamically load this instead of the library's
+SONAME which is included in the tpm2-tss package.
+
+This was reported in [0] and partially fixed by the commit d2f0b2d1f0f
+("tcti-util: Use proper SONAME for TCTI dlopen"). But I still needed these
+changes so the tpm2-abrmd daemon could lookup the correct library name.
+
+[0]: https://lists.01.org/pipermail/tpm2/2018-May/000700.html
+
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ man/tpm2-abrmd.8.in | 12 ++++++------
+ src/tabrmd.h        |  2 +-
+ src/tcti-dynamic.c  |  2 +-
+ src/tcti-dynamic.h  |  2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/man/tpm2-abrmd.8.in b/man/tpm2-abrmd.8.in
+index c745a7e5eac..e02cbf44a16 100644
+--- a/man/tpm2-abrmd.8.in
++++ b/man/tpm2-abrmd.8.in
+@@ -25,7 +25,7 @@ is formatted as "tcti-name:tcti-conf" where:
+ .IP 'tcti-name'
+ The name of the TCTI library shared object file. Libraries are found using
+ the same algorithm as dlopen (3). If the TCTI library file name follows the
+-naming convention: \fBlibtss2-tcti-<name>.so\fR where <name> is the name for
++naming convention: \fBlibtss2-tcti-<name>.so.0\fR where <name> is the name for
+ the TCTI, the value of \fB<name>\fR may be supplied in place of the full
+ library file name. See 'EXAMPLES' below.
+ .IP 'tcti-conf'
+@@ -89,21 +89,21 @@ Execute daemon with default TCTI and provided config string:
+ This is equivalent to:
+ .B tpm2-abrmd --tcti="device:/dev/tpm0"
+ .br
+-.B tpm2-abrmd --tcti="libtss2-tcti-device.so:/dev/tpm0"
++.B tpm2-abrmd --tcti="libtss2-tcti-device.so.0:/dev/tpm0"
+ .TP
+ Have daemon use Microsoft/IBM TPM2 Simulator tcti library
+-'libtss2-tcti-mssim.so'.
++'libtss2-tcti-mssim.so.0'.
+ This connects to a TPM2 simulator via a TCP mssim.
+ .br
+ .B tpm2-abrmd --tcti="mssim"
+ .br
+-.B tpm2-abrmd --tcti="libtss2-tcti-mssim.so"
++.B tpm2-abrmd --tcti="libtss2-tcti-mssim.so.0"
+ .TP
+-Have daemon use tcti library 'libtss2-tcti-mssim.so' and config string
++Have daemon use tcti library 'libtss2-tcti-mssim.so.0' and config string
+ 'tcp://127.0.0.1:5555':
+ .B tpm2-abrmd --tcti=mssim:tcp://127.0.0.1:5555"
+ .br
+-.B tpm2-abrmd --tcti="libtss2-tcti-mssim.so:tcp://127.0.0.1:5555"
++.B tpm2-abrmd --tcti="libtss2-tcti-mssim.so.0:tcp://127.0.0.1:5555"
+ .SH AUTHOR
+ Philip Tricca <philip.b.tricca@intel.com>
+ .SH "SEE ALSO"
+diff --git a/src/tabrmd.h b/src/tabrmd.h
+index 7e0eb02b4ef..ed9d7dd063b 100644
+--- a/src/tabrmd.h
++++ b/src/tabrmd.h
+@@ -43,7 +43,7 @@
+ #define TABRMD_ENTROPY_SRC_DEFAULT "/dev/urandom"
+ #define TABRMD_SESSIONS_MAX_DEFAULT 4
+ #define TABRMD_SESSIONS_MAX 64
+-#define TABRMD_TCTI_FILENAME_DEFAULT "libtss2-tcti-device.so"
++#define TABRMD_TCTI_FILENAME_DEFAULT "libtss2-tcti-device.so.0"
+ #define TABRMD_TCTI_CONF_DEFAULT NULL
+ #define TABRMD_TRANSIENT_MAX_DEFAULT 27
+ #define TABRMD_TRANSIENT_MAX 100
+diff --git a/src/tcti-dynamic.c b/src/tcti-dynamic.c
+index f3e0b6db694..852eb70b2ea 100644
+--- a/src/tcti-dynamic.c
++++ b/src/tcti-dynamic.c
+@@ -139,7 +139,7 @@ tcti_dynamic_class_init (TctiDynamicClass *klass)
+         g_param_spec_string ("file-name",
+                              "TCTI library file",
+                              "Library file containing TCTI implementation.",
+-                             "libtss2-tcti-device.so",
++                             "libtss2-tcti-device.so.0",
+                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+     obj_properties[PROP_CONF_STR] =
+         g_param_spec_string ("conf-str",
+diff --git a/src/tcti-dynamic.h b/src/tcti-dynamic.h
+index 08691a66d58..2ed0eaea640 100644
+--- a/src/tcti-dynamic.h
++++ b/src/tcti-dynamic.h
+@@ -34,7 +34,7 @@
+ 
+ G_BEGIN_DECLS
+ 
+-#define TCTI_DYNAMIC_DEFAULT_FILE_NAME "libtss2-tcti-device.so"
++#define TCTI_DYNAMIC_DEFAULT_FILE_NAME "libtss2-tcti-device.so.0"
+ #define TCTI_DYNAMIC_DEFAULT_CONF_STR  "/dev/tpm0"
+ 
+ typedef struct _TctiDynamicClass {
+-- 
+2.17.1
+
