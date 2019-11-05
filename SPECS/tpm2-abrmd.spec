@@ -1,15 +1,13 @@
 %global selinuxtype targeted
 
 Name: tpm2-abrmd
-Version: 2.0.0
+Version: 2.1.1
 Release: 3%{?dist}
 Summary: A system daemon implementing TPM2 Access Broker and Resource Manager
 
 License: BSD
 URL:     https://github.com/tpm2-software/tpm2-abrmd
 Source0: https://github.com/tpm2-software/tpm2-abrmd/releases/download/%{version}/%{name}-%{version}.tar.gz
-
-Patch0: tcti-dynamic-Make-the-tss2-device-TCTI-library-SONAM.patch
 
 %{?systemd_requires}
 BuildRequires: systemd
@@ -24,7 +22,7 @@ BuildRequires: pkgconfig(tss2-sys)
 BuildRequires: tpm2-tss-devel >= 2.0.0-2%{?dist}
 
 # tpm2-abrmd depends on the package that contains its SELinux policy module
-Requires: (%{name}-selinux >= %{version}-1%{?dist} if selinux-policy-%{selinuxtype})
+Requires: (%{name}-selinux >= 2.0.0-1%{?dist} if selinux-policy-%{selinuxtype})
 
 %description
 tpm2-abrmd is a system daemon implementing the TPM2 access broker (TAB) and
@@ -92,6 +90,18 @@ required to build applications that use tpm2-abrmd.
 %systemd_postun tpm2-abrmd.service
 
 %changelog
+* Tue May 28 2019 Jerry Snitselaar <jsnitsel@redhat.com> - 2.1.1-3
+- Update CI gating to use test.
+resolves: rhbz#1682416
+
+* Tue May 14 2019 Jerry Snitselaar <jsnitsel@redhat.com> - 2.1.1-2
+- Add initial CI gating.
+resolves: rhbz#1682416
+
+* Tue Apr 30 2019 Jerry Snitselaar <jsnitsel@redhat.com> - 2.1.1-1
+- Rebase to release 2.1.1
+resolves: rhbz#1664499
+
 * Wed Feb 06 2019 Jerry Snitselaar <jsnitsel@redhat.com> - 2.0.0-3
 - Fix tpm2-abrmd-selinux Requires
 resolves: rhbz#1642000
