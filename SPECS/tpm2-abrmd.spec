@@ -19,7 +19,7 @@ BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(tss2-mu)
 BuildRequires: pkgconfig(tss2-sys)
 # tpm2-abrmd depends on tpm2-tss-devel for tss2-mu/sys libs
-BuildRequires: tpm2-tss-devel >= 2.0.0-2%{?dist}
+BuildRequires: tpm2-tss-devel >= 2.0.0-2%{?dist}, tpm2-tss-devel < 2.3.1-1%{?dist}
 
 # tpm2-abrmd depends on the package that contains its SELinux policy module
 Requires: (%{name}-selinux >= 2.0.0-1%{?dist} if selinux-policy-%{selinuxtype})
